@@ -246,7 +246,22 @@ class ResourceProcessor implements InitializingBean {
             log.debug "Redirecting ad-hoc resource ${request.requestURI} to $u which makes it UNCACHEABLE - declare this resource "+
                 "and use resourceLink/module tags to avoid redirects and enable client-side caching"
         }
-        response.sendRedirect(u)
+        /**
+         * Send a HTTP 302 FOUND response with a *relative* path as the 'Location'. 
+         * "... all popular browsers will accept a relative URL[citation needed], 
+         * and it is correct according to the upcoming revision of HTTP/1.1"
+         * See http://en.wikipedia.org/wiki/HTTP_location#Relative_URL_example
+         */
+        response.setStatus(HttpServletResponse.SC_FOUND)
+        response.setHeader("Location", u)
+        /**
+         * If the application is proxied the following line of code redirects relative
+         * to the servlet container host rather than the proxy host. The servlet container
+         * host is probably not publicly accessible and so the end user gets a HTTP 404 Not
+         * Found response instead of the intended resource and is left with an internal
+         * URL displayed in their browser address bar. 
+         */
+        // response.sendRedirect(u)
     }
     
     /**
